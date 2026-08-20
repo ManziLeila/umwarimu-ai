@@ -117,6 +117,14 @@ export function applyListValidation(
  * (_status/_flagReason/_processedAt) used by the ingestion pipeline.
  * Idempotent: safe to call again on an already-linked form.
  */
+export function ensureStatusColumns(sheet: GoogleAppsScript.Spreadsheet.Sheet): void {
+  const headers = getHeaders(sheet);
+  if (!headers.includes("_status")) {
+    const lastCol = sheet.getLastColumn();
+    sheet.getRange(1, lastCol + 1, 1, 3).setValues([["_status", "_flagReason", "_processedAt"]]);
+  }
+}
+
 export function linkFormResponses(
   form: GoogleAppsScript.Forms.Form,
   spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet,
@@ -124,18 +132,22 @@ export function linkFormResponses(
 ): GoogleAppsScript.Spreadsheet.Sheet | undefined {
   const before = new Set(spreadsheet.getSheets().map((s) => s.getSheetId()));
   form.setDestination(FormApp.DestinationType.SPREADSHEET, spreadsheet.getId());
+  SpreadsheetApp.flush();
 
-  const created = spreadsheet.getSheets().find((s) => !before.has(s.getSheetId()));
-  const sheet = created ?? spreadsheet.getSheetByName(desiredSheetName);
+  let sheet = spreadsheet.getSheets().find((s) => !before.has(s.getSheetId()));
+  if (!sheet) {
+    // Fallback for when the ID diff above races with the response sheet's
+    // creation — fall back to Apps Script's own naming convention for it.
+    sheet = spreadsheet
+      .getSheets()
+      .filter((s) => s.getName().startsWith("Form Responses"))
+      .sort((a, b) => b.getIndex() - a.getIndex())[0];
+  }
+  sheet ??= spreadsheet.getSheetByName(desiredSheetName) ?? undefined;
   if (!sheet) return undefined;
 
   sheet.setName(desiredSheetName);
   sheet.setFrozenRows(1);
-
-  const headers = getHeaders(sheet);
-  if (!headers.includes("_status")) {
-    const lastCol = sheet.getLastColumn();
-    sheet.getRange(1, lastCol + 1, 1, 3).setValues([["_status", "_flagReason", "_processedAt"]]);
-  }
+  ensureStatusColumns(sheet);
   return sheet;
 }

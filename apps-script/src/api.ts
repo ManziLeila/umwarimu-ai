@@ -21,6 +21,8 @@ import {
   filterByClasses,
   summarizeStudent,
 } from "./dashboardData";
+import { submitAttendance, submitScores } from "./entry";
+import { repairAllSchoolSheets } from "./repair";
 import { onboardSchool } from "./onboarding";
 import type { OnboardSchoolInput } from "./onboarding";
 import { findSchoolById, listSchools } from "./registry";
@@ -31,6 +33,7 @@ import {
   readValidatedAttendance,
   readValidatedScores,
 } from "./schoolData";
+import type { AttendanceEntry, ScoreEntry } from "./types";
 
 interface ApiRequest {
   apiKey: string;
@@ -130,6 +133,9 @@ function route(req: ApiRequest): ApiResponse {
       case "listSchools":
         return { ok: true, data: listSchools() };
 
+      case "repairAllSchoolSheets":
+        return { ok: true, data: repairAllSchoolSheets() };
+
       case "onboardSchool": {
         const input = req.params as unknown as OnboardSchoolInput;
         if (
@@ -195,6 +201,30 @@ function route(req: ApiRequest): ApiResponse {
         return {
           ok: true,
           data: buildStudentDetail(student, scores, attendance, config, asOfDate),
+        };
+      }
+
+      case "submitScores": {
+        const ss = openSchool(requireParam(req, "schoolId"));
+        const entries = req.params?.["entries"];
+        if (!Array.isArray(entries) || entries.length === 0) {
+          throw new Error("params.entries must be a non-empty array.");
+        }
+        return {
+          ok: true,
+          data: submitScores(ss, entries as ScoreEntry[], classesParam(req)),
+        };
+      }
+
+      case "submitAttendance": {
+        const ss = openSchool(requireParam(req, "schoolId"));
+        const entries = req.params?.["entries"];
+        if (!Array.isArray(entries) || entries.length === 0) {
+          throw new Error("params.entries must be a non-empty array.");
+        }
+        return {
+          ok: true,
+          data: submitAttendance(ss, entries as AttendanceEntry[], classesParam(req)),
         };
       }
 

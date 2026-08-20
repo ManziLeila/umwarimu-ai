@@ -250,3 +250,50 @@ export function getStudent(
 export function getAnalytics(schoolId: string, classes: string[] = []): Promise<AnalyticsData> {
   return callAppsScript<AnalyticsData>("getAnalytics", { schoolId, classes });
 }
+
+// --- In-app marks/attendance entry ---
+// `classes` scopes which students an entry is allowed to target — pass a
+// teacher's own class(es), or [] for an admin entering on behalf of anyone.
+
+export interface ScoreEntryInput {
+  studentId: string;
+  subject: string;
+  date: string;
+  score: number;
+  maxScore: number;
+}
+
+export interface AttendanceEntryInput {
+  studentId: string;
+  date: string;
+  attendanceStatus: "present" | "absent" | "late";
+}
+
+export interface SubmitEntryResult<T> {
+  written: number;
+  flagged: Array<{ entry: T; reason: string }>;
+}
+
+export function submitScores(
+  schoolId: string,
+  entries: ScoreEntryInput[],
+  classes: string[] = [],
+): Promise<SubmitEntryResult<ScoreEntryInput>> {
+  return callAppsScript<SubmitEntryResult<ScoreEntryInput>>("submitScores", {
+    schoolId,
+    entries,
+    classes,
+  });
+}
+
+export function submitAttendance(
+  schoolId: string,
+  entries: AttendanceEntryInput[],
+  classes: string[] = [],
+): Promise<SubmitEntryResult<AttendanceEntryInput>> {
+  return callAppsScript<SubmitEntryResult<AttendanceEntryInput>>("submitAttendance", {
+    schoolId,
+    entries,
+    classes,
+  });
+}

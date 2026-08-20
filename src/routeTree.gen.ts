@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppEntryRouteImport } from './routes/_app/entry'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTutorRouteImport } from './routes/_app/tutor'
@@ -56,6 +57,11 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEntryRoute = AppEntryRouteImport.update({
+  id: '/entry',
+  path: '/entry',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/entry': typeof AppEntryRoute
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/entry': typeof AppEntryRoute
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/entry': typeof AppEntryRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/tutor': typeof AppTutorRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/analytics'
     | '/dashboard'
+    | '/entry'
     | '/notifications'
     | '/settings'
     | '/tutor'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/analytics'
     | '/dashboard'
+    | '/entry'
     | '/notifications'
     | '/settings'
     | '/tutor'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_app/analytics'
     | '/_app/dashboard'
+    | '/_app/entry'
     | '/_app/notifications'
     | '/_app/settings'
     | '/_app/tutor'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/entry': {
+      id: '/_app/entry'
+      path: '/entry'
+      fullPath: '/entry'
+      preLoaderRoute: typeof AppEntryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/notifications': {
       id: '/_app/notifications'
       path: '/notifications'
@@ -304,6 +323,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppEntryRoute: typeof AppEntryRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTutorRoute: typeof AppTutorRoute
@@ -316,6 +336,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppEntryRoute: AppEntryRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTutorRoute: AppTutorRoute,
