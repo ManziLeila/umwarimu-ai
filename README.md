@@ -1,5 +1,44 @@
 # Lumina Ed
 
+## Running this project on another computer
+
+This app is one frontend talking to **one shared backend** (a deployed Google
+Apps Script web app + Google Sheets). Anyone who runs the frontend with the
+same four secrets below is looking at the exact same live data — same
+schools, same students, same everything — not a separate copy.
+
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/ManziLeila/umwarimu-ai.git
+   cd umwarimu-ai
+   ```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+3. **Get the secrets.** `.env` is intentionally not committed to git (it
+   would leak API keys). Whoever already has a working `.env` needs to send
+   its contents over a private channel — WhatsApp, email, a password
+   manager's secure note — never through GitHub. Create a file named `.env`
+   in the project root and paste in these four values (see `.env.example`
+   for the exact keys):
+   - `SESSION_SECRET`
+   - `GEMINI_API_KEY`
+   - `APPS_SCRIPT_WEB_APP_URL`
+   - `APPS_SCRIPT_API_KEY`
+4. **Run it**
+   ```bash
+   npm run dev
+   ```
+   Opens at `http://localhost:8080`. This is a *local* address — it only
+   works on the machine it's running on. Each person runs their own local
+   copy of the frontend; both copies talk to the same shared backend, so
+   both see identical, live, real-time data. Log in with any account from
+   that shared backend (or register a new school at `/signup`) and it'll be
+   there for everyone using the same secrets.
+
+---
+
 UMWARIMU AI — FUTURISTIC UI/UX DESIGN SYSTEM
 
 Redesign the Umwarimu AI interface using a premium futuristic AI education aesthetic.
