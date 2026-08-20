@@ -62,11 +62,28 @@ function scryptHash(password: string, salt: string): string {
 }
 
 /** A plain, memorable temporary password for a brand-new account — the
- * admin never has to invent or relay one; it's emailed automatically. */
+ * admin never has to invent or relay one; it's emailed automatically.
+ * Letters only (two distinct words, hyphenated) — easy to read aloud or
+ * retype from a phone screen, no digits to mistype or confuse. */
 export function generateTempPassword(): string {
-  const words = ["kigali", "amahoro", "urumuri", "ejo", "hazaza", "impano"];
-  const word = words[randomInt(0, words.length)];
-  return `${word}-${randomInt(1000, 9999)}`;
+  const words = [
+    "kigali",
+    "amahoro",
+    "urumuri",
+    "ejo",
+    "hazaza",
+    "impano",
+    "umucyo",
+    "intwari",
+    "ubuntu",
+    "amizero",
+  ];
+  const first = words[randomInt(0, words.length)];
+  let second = words[randomInt(0, words.length)];
+  while (second === first) {
+    second = words[randomInt(0, words.length)];
+  }
+  return `${first}-${second}`;
 }
 
 // --- Stateless OTP token ---

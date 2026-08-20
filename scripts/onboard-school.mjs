@@ -32,9 +32,24 @@ function hashPassword(password) {
 }
 
 function generateTempPassword() {
-  const words = ["kigali", "amahoro", "urumuri", "ejo", "hazaza", "impano"];
-  const word = words[randomInt(0, words.length)];
-  return `${word}-${randomInt(1000, 9999)}`;
+  const words = [
+    "kigali",
+    "amahoro",
+    "urumuri",
+    "ejo",
+    "hazaza",
+    "impano",
+    "umucyo",
+    "intwari",
+    "ubuntu",
+    "amizero",
+  ];
+  const first = words[randomInt(0, words.length)];
+  let second = words[randomInt(0, words.length)];
+  while (second === first) {
+    second = words[randomInt(0, words.length)];
+  }
+  return `${first}-${second}`;
 }
 
 async function main() {
