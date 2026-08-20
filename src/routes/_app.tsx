@@ -8,9 +8,10 @@ export const Route = createFileRoute("/_app")({
   beforeLoad: async () => {
     const session = await getCurrentSession();
     if (!session) throw redirect({ to: "/login" });
-    // This shell is teacher/admin only — a student session belongs in
-    // /_portal instead.
+    // This shell is school teacher/admin only — a student belongs in
+    // /portal, a network admin (not scoped to any one school) in /network.
     if (session.role === "student") throw redirect({ to: "/portal/dashboard" });
+    if (session.role === "network-admin") throw redirect({ to: "/network" });
     return { session };
   },
   component: AppLayout,

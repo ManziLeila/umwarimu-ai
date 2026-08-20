@@ -64,6 +64,18 @@ export function addSchoolRow(row: SchoolRow): void {
   appendObjectRow(sheet, getHeaders(sheet), row as unknown as Record<string, unknown>);
 }
 
+/** Network-admin only: suspend or reactivate a school. Does not itself
+ * check who's calling — see network.ts / api.ts for the role gate. */
+export function setSchoolStatus(schoolId: string, status: "active" | "suspended"): void {
+  const sheet = openMasterRegistry().getSheetByName(SCHOOLS_SHEET);
+  if (!sheet)
+    throw new Error(
+      `Master registry is missing the "${SCHOOLS_SHEET}" tab. Run bootstrap() first.`,
+    );
+  const updated = updateMatchingRow(sheet, "schoolId", schoolId, { status });
+  if (!updated) throw new Error(`Unknown school "${schoolId}".`);
+}
+
 export function listStaff(): StaffUser[] {
   const sheet = openMasterRegistry().getSheetByName(STAFF_SHEET);
   if (!sheet) return [];

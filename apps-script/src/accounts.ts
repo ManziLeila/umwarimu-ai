@@ -74,6 +74,39 @@ export function createTeacherAccount(input: CreateTeacherAccountInput): CreateAc
   return trySendNewAccountEmail(input.email, input.name, input.username, input.tempPassword);
 }
 
+export interface CreateNetworkAdminInput {
+  email: string;
+  name: string;
+  username: string;
+  passwordHash: string;
+  passwordSalt: string;
+  /** Plaintext, used only to email the new account holder once — never stored. */
+  tempPassword: string;
+}
+
+/** A network admin isn't tied to any one school (schoolId "" — same
+ * convention as a school's own admin having no `classes`) and can see/manage
+ * every school. There's no self-service path for this role — it's created
+ * directly, the same way the very first school admin's login is. */
+export function createNetworkAdminAccount(input: CreateNetworkAdminInput): CreateAccountResult {
+  if (findStaffByUsername(input.username))
+    throw new Error(`Username "${input.username}" is already taken.`);
+
+  addStaffRow({
+    email: input.email,
+    schoolId: "",
+    role: "network-admin",
+    name: input.name,
+    username: input.username,
+    passwordHash: input.passwordHash,
+    passwordSalt: input.passwordSalt,
+    mustChangePassword: true,
+    classes: "",
+  });
+
+  return trySendNewAccountEmail(input.email, input.name, input.username, input.tempPassword);
+}
+
 export interface CreateStudentAccountInput {
   schoolId: string;
   studentId: string;

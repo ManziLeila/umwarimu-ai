@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NetworkRouteImport } from './routes/network'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
@@ -21,12 +22,14 @@ import { Route as AppEntryRouteImport } from './routes/_app/entry'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTutorRouteImport } from './routes/_app/tutor'
+import { Route as NetworkIndexRouteImport } from './routes/network/index'
 import { Route as PortalDashboardRouteImport } from './routes/portal/dashboard'
 import { Route as PortalTutorRouteImport } from './routes/portal/tutor'
 import { Route as AppAdminStaffRouteImport } from './routes/_app/admin.staff'
 import { Route as AppAdminStudentsRouteImport } from './routes/_app/admin.students'
 import { Route as AppStudentsIndexRouteImport } from './routes/_app/students.index'
 import { Route as AppStudentsStudentIdRouteImport } from './routes/_app/students.$studentId'
+import { Route as NetworkSchoolsSchoolIdRouteImport } from './routes/network/schools.$schoolId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +48,11 @@ const ChangePasswordRoute = ChangePasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NetworkRoute = NetworkRouteImport.update({
+  id: '/network',
+  path: '/network',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -87,6 +95,11 @@ const AppTutorRoute = AppTutorRouteImport.update({
   path: '/tutor',
   getParentRoute: () => AppRoute,
 } as any)
+const NetworkIndexRoute = NetworkIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => NetworkRoute,
+} as any)
 const PortalDashboardRoute = PortalDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -117,11 +130,17 @@ const AppStudentsStudentIdRoute = AppStudentsStudentIdRouteImport.update({
   path: '/students/$studentId',
   getParentRoute: () => AppRoute,
 } as any)
+const NetworkSchoolsSchoolIdRoute = NetworkSchoolsSchoolIdRouteImport.update({
+  id: '/schools/$schoolId',
+  path: '/schools/$schoolId',
+  getParentRoute: () => NetworkRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
+  '/network': typeof NetworkRouteWithChildren
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/analytics': typeof AppAnalyticsRoute
@@ -132,9 +151,11 @@ export interface FileRoutesByFullPath {
   '/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/tutor': typeof PortalTutorRoute
+  '/network/': typeof NetworkIndexRoute
   '/admin/staff': typeof AppAdminStaffRoute
   '/admin/students': typeof AppAdminStudentsRoute
   '/students/$studentId': typeof AppStudentsStudentIdRoute
+  '/network/schools/$schoolId': typeof NetworkSchoolsSchoolIdRoute
   '/students/': typeof AppStudentsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -151,9 +172,11 @@ export interface FileRoutesByTo {
   '/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/tutor': typeof PortalTutorRoute
+  '/network': typeof NetworkIndexRoute
   '/admin/staff': typeof AppAdminStaffRoute
   '/admin/students': typeof AppAdminStudentsRoute
   '/students/$studentId': typeof AppStudentsStudentIdRoute
+  '/network/schools/$schoolId': typeof NetworkSchoolsSchoolIdRoute
   '/students': typeof AppStudentsIndexRoute
 }
 export interface FileRoutesById {
@@ -162,6 +185,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
+  '/network': typeof NetworkRouteWithChildren
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/_app/analytics': typeof AppAnalyticsRoute
@@ -172,9 +196,11 @@ export interface FileRoutesById {
   '/_app/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/tutor': typeof PortalTutorRoute
+  '/network/': typeof NetworkIndexRoute
   '/_app/admin/staff': typeof AppAdminStaffRoute
   '/_app/admin/students': typeof AppAdminStudentsRoute
   '/_app/students/$studentId': typeof AppStudentsStudentIdRoute
+  '/network/schools/$schoolId': typeof NetworkSchoolsSchoolIdRoute
   '/_app/students/': typeof AppStudentsIndexRoute
 }
 export interface FileRouteTypes {
@@ -183,6 +209,7 @@ export interface FileRouteTypes {
     | '/'
     | '/change-password'
     | '/login'
+    | '/network'
     | '/portal'
     | '/signup'
     | '/analytics'
@@ -193,9 +220,11 @@ export interface FileRouteTypes {
     | '/tutor'
     | '/portal/dashboard'
     | '/portal/tutor'
+    | '/network/'
     | '/admin/staff'
     | '/admin/students'
     | '/students/$studentId'
+    | '/network/schools/$schoolId'
     | '/students/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -212,9 +241,11 @@ export interface FileRouteTypes {
     | '/tutor'
     | '/portal/dashboard'
     | '/portal/tutor'
+    | '/network'
     | '/admin/staff'
     | '/admin/students'
     | '/students/$studentId'
+    | '/network/schools/$schoolId'
     | '/students'
   id:
     | '__root__'
@@ -222,6 +253,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/change-password'
     | '/login'
+    | '/network'
     | '/portal'
     | '/signup'
     | '/_app/analytics'
@@ -232,9 +264,11 @@ export interface FileRouteTypes {
     | '/_app/tutor'
     | '/portal/dashboard'
     | '/portal/tutor'
+    | '/network/'
     | '/_app/admin/staff'
     | '/_app/admin/students'
     | '/_app/students/$studentId'
+    | '/network/schools/$schoolId'
     | '/_app/students/'
   fileRoutesById: FileRoutesById
 }
@@ -243,6 +277,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ChangePasswordRoute: typeof ChangePasswordRoute
   LoginRoute: typeof LoginRoute
+  NetworkRoute: typeof NetworkRouteWithChildren
   PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
 }
@@ -275,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/network': {
+      id: '/network'
+      path: '/network'
+      fullPath: '/network'
+      preLoaderRoute: typeof NetworkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -333,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTutorRouteImport
       parentRoute: typeof AppRoute
     }
+    '/network/': {
+      id: '/network/'
+      path: '/'
+      fullPath: '/network/'
+      preLoaderRoute: typeof NetworkIndexRouteImport
+      parentRoute: typeof NetworkRoute
+    }
     '/portal/dashboard': {
       id: '/portal/dashboard'
       path: '/dashboard'
@@ -375,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStudentsStudentIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/network/schools/$schoolId': {
+      id: '/network/schools/$schoolId'
+      path: '/schools/$schoolId'
+      fullPath: '/network/schools/$schoolId'
+      preLoaderRoute: typeof NetworkSchoolsSchoolIdRouteImport
+      parentRoute: typeof NetworkRoute
+    }
   }
 }
 
@@ -406,6 +462,19 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface NetworkRouteChildren {
+  NetworkIndexRoute: typeof NetworkIndexRoute
+  NetworkSchoolsSchoolIdRoute: typeof NetworkSchoolsSchoolIdRoute
+}
+
+const NetworkRouteChildren: NetworkRouteChildren = {
+  NetworkIndexRoute: NetworkIndexRoute,
+  NetworkSchoolsSchoolIdRoute: NetworkSchoolsSchoolIdRoute,
+}
+
+const NetworkRouteWithChildren =
+  NetworkRoute._addFileChildren(NetworkRouteChildren)
+
 interface PortalRouteChildren {
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalTutorRoute: typeof PortalTutorRoute
@@ -424,6 +493,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ChangePasswordRoute: ChangePasswordRoute,
   LoginRoute: LoginRoute,
+  NetworkRoute: NetworkRouteWithChildren,
   PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
 }

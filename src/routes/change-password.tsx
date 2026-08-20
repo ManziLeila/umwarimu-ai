@@ -42,7 +42,14 @@ function ChangePasswordPage() {
         setError(result.error);
         return;
       }
-      navigate({ to: session.role === "student" ? "/portal/dashboard" : "/dashboard" });
+      navigate({
+        to:
+          session.role === "student"
+            ? "/portal/dashboard"
+            : session.role === "network-admin"
+              ? "/network"
+              : "/dashboard",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

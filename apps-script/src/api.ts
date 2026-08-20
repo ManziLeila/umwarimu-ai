@@ -1,4 +1,5 @@
 import {
+  createNetworkAdminAccount,
   createStudentAccount,
   createTeacherAccount,
   findAccountByUsername,
@@ -8,6 +9,7 @@ import {
   updateAccountPassword,
 } from "./accounts";
 import type {
+  CreateNetworkAdminInput,
   CreateStudentAccountInput,
   CreateTeacherAccountInput,
   UpdatePasswordInput,
@@ -22,10 +24,11 @@ import {
   summarizeStudent,
 } from "./dashboardData";
 import { submitAttendance, submitScores } from "./entry";
+import { listSchoolsWithStats } from "./network";
 import { repairAllSchoolSheets } from "./repair";
 import { onboardSchool } from "./onboarding";
 import type { OnboardSchoolInput } from "./onboarding";
-import { findSchoolById, listSchools } from "./registry";
+import { findSchoolById, listSchools, setSchoolStatus } from "./registry";
 import {
   readActiveStudents,
   readAlertLog,
@@ -83,9 +86,16 @@ function route(req: ApiRequest): ApiResponse {
       case "findAccount": {
         const username = requireParam(req, "username");
         const account = findAccountByUsername(username);
-        return account
-          ? { ok: true, data: account }
-          : { ok: false, error: `No account found for "${username}".` };
+        if (!account) return { ok: false, error: `No account found for "${username}".` };
+
+        const school = account.schoolId ? findSchoolById(account.schoolId) : undefined;
+        if (school && school.status !== "active") {
+          return {
+            ok: false,
+            error: "This school's access has been suspended. Contact your administrator.",
+          };
+        }
+        return { ok: true, data: account };
       }
 
       case "sendOtpEmail": {
@@ -132,6 +142,27 @@ function route(req: ApiRequest): ApiResponse {
 
       case "listSchools":
         return { ok: true, data: listSchools() };
+
+      case "createNetworkAdmin": {
+        const input = req.params as unknown as CreateNetworkAdminInput;
+        if (!input?.email || !input?.username || !input?.passwordHash) {
+          throw new Error("params.email, username and passwordHash are required.");
+        }
+        return { ok: true, data: createNetworkAdminAccount(input) };
+      }
+
+      case "listSchoolsWithStats":
+        return { ok: true, data: listSchoolsWithStats() };
+
+      case "setSchoolStatus": {
+        const schoolId = requireParam(req, "schoolId");
+        const status = requireParam(req, "status");
+        if (status !== "active" && status !== "suspended") {
+          throw new Error('params.status must be "active" or "suspended".');
+        }
+        setSchoolStatus(schoolId, status);
+        return { ok: true, data: "updated" };
+      }
 
       case "repairAllSchoolSheets":
         return { ok: true, data: repairAllSchoolSheets() };

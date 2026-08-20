@@ -218,6 +218,30 @@ export function onboardSchool(input: OnboardSchoolInput): Promise<OnboardSchoolR
   return callAppsScript<OnboardSchoolResult>("onboardSchool", { ...input });
 }
 
+// --- Network-admin (platform-wide) oversight ---
+
+export interface SchoolWithStats {
+  schoolId: string;
+  name: string;
+  district: string;
+  adminEmail: string;
+  status: "active" | "suspended";
+  spreadsheetId: string;
+  scoresFormId: string;
+  attendanceFormId: string;
+  createdAt: string;
+  studentCount: number;
+  staffCount: number;
+}
+
+export function listSchoolsWithStats(): Promise<SchoolWithStats[]> {
+  return callAppsScript<SchoolWithStats[]>("listSchoolsWithStats", {});
+}
+
+export function setSchoolStatus(schoolId: string, status: "active" | "suspended"): Promise<void> {
+  return callAppsScript<void>("setSchoolStatus", { schoolId, status });
+}
+
 export function updatePassword(
   kind: "staff" | "student",
   username: string,
