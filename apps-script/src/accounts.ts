@@ -132,7 +132,9 @@ export function createStudentAccount(input: CreateStudentAccountInput): CreateAc
   const sheet = ss.getSheetByName("Students");
   if (!sheet) throw new Error(`School "${input.schoolId}" has no Students sheet.`);
 
-  const existing = readRowsAsObjects<Student>(sheet).find((s) => s.studentId === input.studentId);
+  const existing = readRowsAsObjects<Student>(sheet).find(
+    (s) => String(s.studentId) === input.studentId,
+  );
   if (existing) throw new Error(`Student ID "${input.studentId}" already exists.`);
 
   const row: Student = {
@@ -188,7 +190,9 @@ export function findAccountByUsername(username: string): AccountCredentials | un
   const ss = SpreadsheetApp.openById(school.spreadsheetId);
   const sheet = ss.getSheetByName("Students");
   const student = sheet
-    ? readRowsAsObjects<Student>(sheet).find((s) => s.studentId === studentIndex.studentId)
+    ? readRowsAsObjects<Student>(sheet).find(
+        (s) => String(s.studentId) === studentIndex.studentId,
+      )
     : undefined;
   if (!student?.username || !student.passwordHash || !student.passwordSalt) return undefined;
 

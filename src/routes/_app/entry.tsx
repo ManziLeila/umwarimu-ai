@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { submitAttendance, submitScores } from "@/lib/entry.functions";
+import { highSchoolSubjects } from "@/lib/mock-data";
 import { getStudentsData } from "@/lib/students.functions";
 
 export const Route = createFileRoute("/_app/entry")({
@@ -113,7 +114,7 @@ function AttendanceForm({ roster }: { roster: { id: string; name: string; classN
     setSubmitting(true);
     try {
       const entries = roster.map((s) => ({
-        studentId: s.id,
+        studentId: String(s.id),
         date,
         attendanceStatus: status[s.id] ?? "present",
       }));
@@ -197,7 +198,8 @@ function AttendanceForm({ roster }: { roster: { id: string; name: string; classN
 }
 
 function MarksForm({ roster }: { roster: { id: string; name: string; className: string }[] }) {
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(highSchoolSubjects[0]!);
+  const [customSubject, setCustomSubject] = useState("");
   const [date, setDate] = useState(todayIso());
   const [maxScore, setMaxScore] = useState("100");
   const [scores, setScores] = useState<Record<string, string>>({});
@@ -211,7 +213,8 @@ function MarksForm({ roster }: { roster: { id: string; name: string; className: 
     setNotice(null);
     setFlagged([]);
 
-    if (!subject.trim()) {
+    const resolvedSubject = subject === "Other" ? customSubject.trim() : subject;
+    if (!resolvedSubject) {
       setError("Enter a subject first.");
       return;
     }
@@ -223,8 +226,8 @@ function MarksForm({ roster }: { roster: { id: string; name: string; className: 
     const entries = roster
       .filter((s) => scores[s.id] !== undefined && scores[s.id] !== "")
       .map((s) => ({
-        studentId: s.id,
-        subject: subject.trim(),
+        studentId: String(s.id),
+        subject: resolvedSubject,
         date,
         score: Number(scores[s.id]),
         maxScore: max,
@@ -253,15 +256,28 @@ function MarksForm({ roster }: { roster: { id: string; name: string; className: 
   return (
     <GlassPanel className="animate-fade-up space-y-4 p-5">
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
+        <div className="space-y-2 sm:col-span-1">
           <Label htmlFor="marks-subject">Subject</Label>
-          <Input
+          <select
             id="marks-subject"
-            placeholder="e.g. Mathematics"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="h-10 bg-secondary/40"
-          />
+            className="border-border bg-secondary/40 h-10 w-full rounded-md border px-3 text-sm"
+          >
+            {highSchoolSubjects.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          {subject === "Other" && (
+            <Input
+              placeholder="Type the subject name"
+              value={customSubject}
+              onChange={(e) => setCustomSubject(e.target.value)}
+              className="h-10 bg-secondary/40"
+            />
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="marks-date">Date</Label>

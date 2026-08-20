@@ -27,7 +27,12 @@ export function readSchoolConfig(ss: GoogleAppsScript.Spreadsheet.Spreadsheet): 
 export function readActiveStudents(ss: GoogleAppsScript.Spreadsheet.Spreadsheet): Student[] {
   const sheet = ss.getSheetByName("Students");
   if (!sheet) return [];
-  return readRowsAsObjects<Student>(sheet).filter((s) => s.status === "active");
+  return readRowsAsObjects<Student>(sheet)
+    .filter((s) => s.status === "active")
+    // A purely-numeric studentId (e.g. "2024001") gets read back from
+    // Sheets as a JS number, not a string, since Sheets auto-types cells
+    // that look numeric. Every consumer downstream expects a string.
+    .map((s) => ({ ...s, studentId: String(s.studentId) }));
 }
 
 /** Only rows the ingestion pipeline has validated as "ok" — flagged/unprocessed rows never reach dashboards or alerts. */

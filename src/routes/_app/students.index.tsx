@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search } from "lucide-react";
 
+import { AddStudentsPanel } from "@/components/AddStudentsPanel";
 import { GlassPanel, SectionLabel, TrendBadge, EmptyState } from "@/components/kit";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,8 @@ const filters: { key: StudentStatus | "all"; label: string }[] = [
 
 function StudentsPage() {
   const students = Route.useLoaderData();
+  const { session } = Route.useRouteContext();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StudentStatus | "all">("all");
 
@@ -57,6 +60,8 @@ function StudentsPage() {
           {students.length} learners in this class
         </p>
       </header>
+
+      <AddStudentsPanel classOptions={session.classes} onAdded={() => router.invalidate()} />
 
       <GlassPanel className="animate-fade-up space-y-4 p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">

@@ -24,6 +24,38 @@ export const school = {
 
 export const subjects = ["Mathematics", "English", "Physics", "Biology", "Kinyarwanda"];
 
+/** A broad, curriculum-agnostic list for the marks-entry subject picker —
+ * covers REB, Cambridge and BTEC-style options so it's usable regardless
+ * of which system a school follows. "Other" falls back to free text. */
+export const highSchoolSubjects = [
+  "Mathematics",
+  "Sub-Mathematics",
+  "English",
+  "Kinyarwanda",
+  "French",
+  "Kiswahili",
+  "Literature in English",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Geography",
+  "History",
+  "Economics",
+  "Entrepreneurship",
+  "Computer Science / ICT",
+  "Business Studies",
+  "Accounting",
+  "Agriculture",
+  "Nutrition",
+  "General Studies & Communication Skills",
+  "Religion & Value Education",
+  "Civic Education",
+  "Physical Education",
+  "Fine Art",
+  "Music",
+  "Other",
+];
+
 const mk = (
   id: string,
   name: string,
@@ -70,10 +102,37 @@ export const students: Student[] = [
   mk("alex-uwase", "Alex Uwase", "S3 Mathematics", 72, 91, "up", "improving", "Mathematics"),
   mk("aline-mukamana", "Aline Mukamana", "S3 Mathematics", 84, 96, "up", "on-track", "Physics"),
   mk("eric-habimana", "Eric Habimana", "S3 Mathematics", 51, 78, "down", "support", "Mathematics"),
-  mk("claudine-iradukunda", "Claudine Iradukunda", "S3 Mathematics", 45, 68, "down", "risk", "English"),
+  mk(
+    "claudine-iradukunda",
+    "Claudine Iradukunda",
+    "S3 Mathematics",
+    45,
+    68,
+    "down",
+    "risk",
+    "English",
+  ),
   mk("kevin-ndayisaba", "Kevin Ndayisaba", "S3 Mathematics", 66, 88, "flat", "on-track", "Biology"),
-  mk("diane-nishimwe", "Diane Nishimwe", "S3 Mathematics", 58, 82, "up", "improving", "Mathematics"),
-  mk("patrick-gasana", "Patrick Gasana", "S3 Mathematics", 77, 93, "flat", "on-track", "Kinyarwanda"),
+  mk(
+    "diane-nishimwe",
+    "Diane Nishimwe",
+    "S3 Mathematics",
+    58,
+    82,
+    "up",
+    "improving",
+    "Mathematics",
+  ),
+  mk(
+    "patrick-gasana",
+    "Patrick Gasana",
+    "S3 Mathematics",
+    77,
+    93,
+    "flat",
+    "on-track",
+    "Kinyarwanda",
+  ),
   mk("sandrine-keza", "Sandrine Keza", "S3 Mathematics", 49, 71, "down", "support", "Physics"),
 ];
 
