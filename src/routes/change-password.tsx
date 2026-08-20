@@ -3,8 +3,8 @@ import { useState } from "react";
 
 import { AiOrb } from "@/components/AiOrb";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { changePassword, getCurrentSession } from "@/lib/login.functions";
 
 export const Route = createFileRoute("/change-password")({
@@ -71,9 +71,8 @@ function ChangePasswordPage() {
         <form className="mt-7 space-y-4 text-left" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="current">Current (temporary) password</Label>
-            <Input
+            <PasswordInput
               id="current"
-              type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               className="h-11 bg-secondary/40"
@@ -82,9 +81,8 @@ function ChangePasswordPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="new">New password</Label>
-            <Input
+            <PasswordInput
               id="new"
-              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="h-11 bg-secondary/40"
@@ -94,9 +92,8 @@ function ChangePasswordPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm">Confirm new password</Label>
-            <Input
+            <PasswordInput
               id="confirm"
-              type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="h-11 bg-secondary/40"

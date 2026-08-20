@@ -47,7 +47,7 @@ function generateTempPassword() {
   while (second === first) {
     second = words[randomInt(0, words.length)];
   }
-  return `${first}-${second}`;
+  return first + second[0].toUpperCase() + second.slice(1);
 }
 
 async function main() {

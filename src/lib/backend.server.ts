@@ -87,6 +87,9 @@ interface AppsScriptResponse<T> {
   error?: string;
 }
 
+const NETWORK_RETRY_ATTEMPTS = 3;
+const NETWORK_RETRY_DELAY_MS = 400;
+
 async function callAppsScript<T>(action: string, params?: Record<string, unknown>): Promise<T> {
   const url = process.env["APPS_SCRIPT_WEB_APP_URL"];
   const apiKey = process.env["APPS_SCRIPT_API_KEY"];
@@ -96,21 +99,51 @@ async function callAppsScript<T>(action: string, params?: Record<string, unknown
     );
   }
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ apiKey, action, params }),
-  });
+  // Reaching script.google.com from here is occasionally flaky at the
+  // network level (DNS/connect timeouts) — that's a transient condition
+  // worth quietly retrying, unlike an actual `{ok:false}` application error
+  // (bad input, unknown school, etc.), which retrying would never fix.
+  let lastNetworkError: unknown;
+  for (let attempt = 1; attempt <= NETWORK_RETRY_ATTEMPTS; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ apiKey, action, params }),
+      });
+    } catch (err) {
+      lastNetworkError = err;
+      if (attempt < NETWORK_RETRY_ATTEMPTS) {
+        await sleep(NETWORK_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+      throw new Error(
+        `Couldn't reach the Apps Script backend after ${NETWORK_RETRY_ATTEMPTS} attempts: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
 
-  if (!res.ok) {
-    throw new Error(`Apps Script backend returned HTTP ${res.status}.`);
+    if (!res.ok) {
+      throw new Error(`Apps Script backend returned HTTP ${res.status}.`);
+    }
+
+    const body = (await res.json()) as AppsScriptResponse<T>;
+    if (!body.ok) {
+      throw new Error(body.error ?? "Apps Script backend request failed.");
+    }
+    return body.data as T;
   }
 
-  const body = (await res.json()) as AppsScriptResponse<T>;
-  if (!body.ok) {
-    throw new Error(body.error ?? "Apps Script backend request failed.");
-  }
-  return body.data as T;
+  // Unreachable — the loop above always returns or throws — but keeps TS happy.
+  throw lastNetworkError instanceof Error
+    ? lastNetworkError
+    : new Error("Couldn't reach the Apps Script backend.");
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // --- Auth / accounts ---
