@@ -11,12 +11,14 @@ export const Route = createFileRoute("/change-password")({
   beforeLoad: async () => {
     const session = await getCurrentSession();
     if (!session) throw redirect({ to: "/login" });
+    return { session };
   },
   head: () => ({ meta: [{ title: "Change password · Umwarimu AI" }] }),
   component: ChangePasswordPage,
 });
 
 function ChangePasswordPage() {
+  const { session } = Route.useRouteContext();
   const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -40,7 +42,7 @@ function ChangePasswordPage() {
         setError(result.error);
         return;
       }
-      navigate({ to: "/dashboard" });
+      navigate({ to: session.role === "student" ? "/portal/dashboard" : "/dashboard" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

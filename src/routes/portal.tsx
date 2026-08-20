@@ -1,29 +1,28 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 import { AmbientBackground } from "@/components/AmbientBackground";
-import { AppShell } from "@/components/AppShell";
+import { PortalShell } from "@/components/PortalShell";
 import { getCurrentSession } from "@/lib/login.functions";
 
-export const Route = createFileRoute("/_app")({
+export const Route = createFileRoute("/portal")({
   beforeLoad: async () => {
     const session = await getCurrentSession();
     if (!session) throw redirect({ to: "/login" });
-    // This shell is teacher/admin only — a student session belongs in
-    // /_portal instead.
-    if (session.role === "student") throw redirect({ to: "/portal/dashboard" });
+    // This shell is student-only — a staff session belongs in /_app instead.
+    if (session.role !== "student") throw redirect({ to: "/dashboard" });
     return { session };
   },
-  component: AppLayout,
+  component: PortalLayout,
 });
 
-function AppLayout() {
+function PortalLayout() {
   const { session } = Route.useRouteContext();
   return (
     <>
       <AmbientBackground />
-      <AppShell session={session}>
+      <PortalShell session={session}>
         <Outlet />
-      </AppShell>
+      </PortalShell>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import {
   DEFAULT_SCHOOL_CONFIG,
   getMasterRegistrySpreadsheetId,
+  getTemplateSpreadsheetId,
   setScriptProperties,
 } from "./config";
 import {
@@ -75,6 +76,14 @@ export function migrateAccountFields(): void {
   if (staffSheet) ensureHeaders(staffSheet, STAFF_HEADERS);
   getOrCreateSheet(registry, STUDENT_ACCOUNTS_SHEET, STUDENT_ACCOUNTS_HEADERS);
 
+  // Fix the shared template too — otherwise every *future* self-signup
+  // copies a Students sheet without these columns, and createStudentAccount
+  // silently drops username/passwordHash/etc. on write (appendObjectRow only
+  // ever writes columns that already exist as headers).
+  const template = SpreadsheetApp.openById(getTemplateSpreadsheetId());
+  const templateStudentsSheet = template.getSheetByName("Students");
+  if (templateStudentsSheet) ensureHeaders(templateStudentsSheet, STUDENTS_HEADERS);
+
   let migratedSchools = 0;
   for (const school of listSchools()) {
     const ss = SpreadsheetApp.openById(school.spreadsheetId);
@@ -84,7 +93,7 @@ export function migrateAccountFields(): void {
       migratedSchools += 1;
     }
   }
-  Logger.log(`Migrated Master Registry + ${migratedSchools} school spreadsheet(s).`);
+  Logger.log(`Migrated Master Registry + template + ${migratedSchools} school spreadsheet(s).`);
 }
 
 function createMasterRegistry(): GoogleAppsScript.Spreadsheet.Spreadsheet {

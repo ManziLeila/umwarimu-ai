@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
@@ -20,6 +21,8 @@ import { Route as AppEntryRouteImport } from './routes/_app/entry'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTutorRouteImport } from './routes/_app/tutor'
+import { Route as PortalDashboardRouteImport } from './routes/portal/dashboard'
+import { Route as PortalTutorRouteImport } from './routes/portal/tutor'
 import { Route as AppAdminStaffRouteImport } from './routes/_app/admin.staff'
 import { Route as AppAdminStudentsRouteImport } from './routes/_app/admin.students'
 import { Route as AppStudentsIndexRouteImport } from './routes/_app/students.index'
@@ -42,6 +45,11 @@ const ChangePasswordRoute = ChangePasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -79,6 +87,16 @@ const AppTutorRoute = AppTutorRouteImport.update({
   path: '/tutor',
   getParentRoute: () => AppRoute,
 } as any)
+const PortalDashboardRoute = PortalDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalTutorRoute = PortalTutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => PortalRoute,
+} as any)
 const AppAdminStaffRoute = AppAdminStaffRouteImport.update({
   id: '/admin/staff',
   path: '/admin/staff',
@@ -104,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -111,6 +130,8 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/tutor': typeof PortalTutorRoute
   '/admin/staff': typeof AppAdminStaffRoute
   '/admin/students': typeof AppAdminStudentsRoute
   '/students/$studentId': typeof AppStudentsStudentIdRoute
@@ -120,6 +141,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -127,6 +149,8 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/tutor': typeof PortalTutorRoute
   '/admin/staff': typeof AppAdminStaffRoute
   '/admin/students': typeof AppAdminStudentsRoute
   '/students/$studentId': typeof AppStudentsStudentIdRoute
@@ -138,6 +162,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -145,6 +170,8 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/tutor': typeof AppTutorRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/tutor': typeof PortalTutorRoute
   '/_app/admin/staff': typeof AppAdminStaffRoute
   '/_app/admin/students': typeof AppAdminStudentsRoute
   '/_app/students/$studentId': typeof AppStudentsStudentIdRoute
@@ -156,6 +183,7 @@ export interface FileRouteTypes {
     | '/'
     | '/change-password'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/analytics'
     | '/dashboard'
@@ -163,6 +191,8 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/tutor'
+    | '/portal/dashboard'
+    | '/portal/tutor'
     | '/admin/staff'
     | '/admin/students'
     | '/students/$studentId'
@@ -172,6 +202,7 @@ export interface FileRouteTypes {
     | '/'
     | '/change-password'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/analytics'
     | '/dashboard'
@@ -179,6 +210,8 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/tutor'
+    | '/portal/dashboard'
+    | '/portal/tutor'
     | '/admin/staff'
     | '/admin/students'
     | '/students/$studentId'
@@ -189,6 +222,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/change-password'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/_app/analytics'
     | '/_app/dashboard'
@@ -196,6 +230,8 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/settings'
     | '/_app/tutor'
+    | '/portal/dashboard'
+    | '/portal/tutor'
     | '/_app/admin/staff'
     | '/_app/admin/students'
     | '/_app/students/$studentId'
@@ -207,6 +243,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ChangePasswordRoute: typeof ChangePasswordRoute
   LoginRoute: typeof LoginRoute
+  PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
 }
 
@@ -238,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -288,6 +332,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/tutor'
       preLoaderRoute: typeof AppTutorRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/portal/dashboard': {
+      id: '/portal/dashboard'
+      path: '/dashboard'
+      fullPath: '/portal/dashboard'
+      preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/tutor': {
+      id: '/portal/tutor'
+      path: '/tutor'
+      fullPath: '/portal/tutor'
+      preLoaderRoute: typeof PortalTutorRouteImport
+      parentRoute: typeof PortalRoute
     }
     '/_app/admin/staff': {
       id: '/_app/admin/staff'
@@ -348,11 +406,25 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface PortalRouteChildren {
+  PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalTutorRoute: typeof PortalTutorRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalDashboardRoute: PortalDashboardRoute,
+  PortalTutorRoute: PortalTutorRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   ChangePasswordRoute: ChangePasswordRoute,
   LoginRoute: LoginRoute,
+  PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport

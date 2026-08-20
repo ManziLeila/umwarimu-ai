@@ -71,7 +71,11 @@ export const loginStep2 = createServerFn({ method: "POST" })
     }
 
     await establishSession(session);
-    return { ok: true as const, mustChangePassword: session.mustChangePassword };
+    return {
+      ok: true as const,
+      mustChangePassword: session.mustChangePassword,
+      role: session.role,
+    };
   });
 
 const ChangePasswordInput = z.object({
