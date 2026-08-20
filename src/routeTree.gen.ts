@@ -19,11 +19,13 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppEntryRouteImport } from './routes/_app/entry'
+import { Route as AppMessagesRouteImport } from './routes/_app/messages'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTutorRouteImport } from './routes/_app/tutor'
 import { Route as NetworkIndexRouteImport } from './routes/network/index'
 import { Route as PortalDashboardRouteImport } from './routes/portal/dashboard'
+import { Route as PortalMessagesRouteImport } from './routes/portal/messages'
 import { Route as PortalTutorRouteImport } from './routes/portal/tutor'
 import { Route as AppAdminStaffRouteImport } from './routes/_app/admin.staff'
 import { Route as AppAdminStudentsRouteImport } from './routes/_app/admin.students'
@@ -80,6 +82,11 @@ const AppEntryRoute = AppEntryRouteImport.update({
   path: '/entry',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -103,6 +110,11 @@ const NetworkIndexRoute = NetworkIndexRouteImport.update({
 const PortalDashboardRoute = PortalDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalMessagesRoute = PortalMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalTutorRoute = PortalTutorRouteImport.update({
@@ -146,10 +158,12 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
   '/entry': typeof AppEntryRoute
+  '/messages': typeof AppMessagesRoute
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/tutor': typeof PortalTutorRoute
   '/network/': typeof NetworkIndexRoute
   '/admin/staff': typeof AppAdminStaffRoute
@@ -167,10 +181,12 @@ export interface FileRoutesByTo {
   '/analytics': typeof AppAnalyticsRoute
   '/dashboard': typeof AppDashboardRoute
   '/entry': typeof AppEntryRoute
+  '/messages': typeof AppMessagesRoute
   '/notifications': typeof AppNotificationsRoute
   '/settings': typeof AppSettingsRoute
   '/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/tutor': typeof PortalTutorRoute
   '/network': typeof NetworkIndexRoute
   '/admin/staff': typeof AppAdminStaffRoute
@@ -191,10 +207,12 @@ export interface FileRoutesById {
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/entry': typeof AppEntryRoute
+  '/_app/messages': typeof AppMessagesRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/tutor': typeof AppTutorRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/tutor': typeof PortalTutorRoute
   '/network/': typeof NetworkIndexRoute
   '/_app/admin/staff': typeof AppAdminStaffRoute
@@ -215,10 +233,12 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/dashboard'
     | '/entry'
+    | '/messages'
     | '/notifications'
     | '/settings'
     | '/tutor'
     | '/portal/dashboard'
+    | '/portal/messages'
     | '/portal/tutor'
     | '/network/'
     | '/admin/staff'
@@ -236,10 +256,12 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/dashboard'
     | '/entry'
+    | '/messages'
     | '/notifications'
     | '/settings'
     | '/tutor'
     | '/portal/dashboard'
+    | '/portal/messages'
     | '/portal/tutor'
     | '/network'
     | '/admin/staff'
@@ -259,10 +281,12 @@ export interface FileRouteTypes {
     | '/_app/analytics'
     | '/_app/dashboard'
     | '/_app/entry'
+    | '/_app/messages'
     | '/_app/notifications'
     | '/_app/settings'
     | '/_app/tutor'
     | '/portal/dashboard'
+    | '/portal/messages'
     | '/portal/tutor'
     | '/network/'
     | '/_app/admin/staff'
@@ -354,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEntryRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/messages': {
+      id: '/_app/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/notifications': {
       id: '/_app/notifications'
       path: '/notifications'
@@ -387,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/portal/dashboard'
       preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/messages': {
+      id: '/portal/messages'
+      path: '/messages'
+      fullPath: '/portal/messages'
+      preLoaderRoute: typeof PortalMessagesRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/tutor': {
@@ -438,6 +476,7 @@ interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppEntryRoute: typeof AppEntryRoute
+  AppMessagesRoute: typeof AppMessagesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTutorRoute: typeof AppTutorRoute
@@ -451,6 +490,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppEntryRoute: AppEntryRoute,
+  AppMessagesRoute: AppMessagesRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTutorRoute: AppTutorRoute,
@@ -477,11 +517,13 @@ const NetworkRouteWithChildren =
 
 interface PortalRouteChildren {
   PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalMessagesRoute: typeof PortalMessagesRoute
   PortalTutorRoute: typeof PortalTutorRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalDashboardRoute: PortalDashboardRoute,
+  PortalMessagesRoute: PortalMessagesRoute,
   PortalTutorRoute: PortalTutorRoute,
 }
 

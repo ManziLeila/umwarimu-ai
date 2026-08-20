@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Sparkles, KeyRound, LogOut } from "lucide-react";
+import { LayoutDashboard, Sparkles, MessageCircle, KeyRound, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Logo } from "@/components/AiOrb";
@@ -12,6 +12,7 @@ import type { SessionData } from "@/lib/auth.server";
 const nav = [
   { to: "/portal/dashboard", label: "My Progress", icon: LayoutDashboard },
   { to: "/portal/tutor", label: "AI Tutor", icon: Sparkles },
+  { to: "/portal/messages", label: "Messages", icon: MessageCircle },
   { to: "/change-password", label: "Change Password", icon: KeyRound },
 ] as const;
 

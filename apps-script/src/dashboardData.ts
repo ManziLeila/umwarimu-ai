@@ -42,6 +42,11 @@ export interface AssessmentPoint {
   score: number;
 }
 
+export interface AttendanceRecord {
+  date: string;
+  status: "present" | "absent" | "late";
+}
+
 export interface StudentDetail extends StudentSummary {
   subjects: SubjectScorePoint[];
   assessments: AssessmentPoint[];
@@ -50,6 +55,8 @@ export interface StudentDetail extends StudentSummary {
   /** Subjects currently flagged by the same 3-consecutive-low-scores rule
    * used for at-risk alerts — empty if none are flagged right now. */
   weakSubjects: string[];
+  /** Most recent attendance records first, capped at 30. */
+  attendanceRecords: AttendanceRecord[];
 }
 
 export interface TrendPoint {
@@ -265,6 +272,11 @@ export function buildStudentDetail(
     recommendations.push("Keep up the consistent work — no flags right now.");
   }
 
+  const attendanceRecords: AttendanceRecord[] = [...attendance]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 30)
+    .map((a) => ({ date: a.date, status: a.attendanceStatus }));
+
   return {
     ...summary,
     subjects,
@@ -272,6 +284,7 @@ export function buildStudentDetail(
     notes: [], // no teacher-notes feature exists yet — flagged, not fabricated
     recommendations,
     weakSubjects: assessment.atRiskSubjects.map((s) => s.subject),
+    attendanceRecords,
   };
 }
 

@@ -10,6 +10,7 @@ const dict: Dict = {
   "nav.analytics": { en: "Analytics", rw: "Isesengura" },
   "nav.tutor": { en: "AI Tutor", rw: "Mwarimu AI" },
   "nav.entry": { en: "Marks & Attendance", rw: "Amanota n'Ubwitabire" },
+  "nav.messages": { en: "Messages", rw: "Ubutumwa" },
   "nav.notifications": { en: "Notifications", rw: "Ubutumwa" },
   "nav.settings": { en: "Settings", rw: "Igenamiterere" },
   "nav.adminStaff": { en: "Manage Staff", rw: "Gucunga abakozi" },

@@ -265,24 +265,54 @@ export function StudentDetailView({
           </ul>
         </GlassPanel>
 
-        <GlassPanel className="p-5">
-          <SectionLabel>Teacher notes</SectionLabel>
-          <ul className="mt-4 space-y-4">
-            {student.notes.map((n) => (
-              <li key={n.text} className="glass rounded-xl p-3">
-                <p className="text-sm leading-snug">{n.text}</p>
-                <p className="text-muted-foreground mt-2 text-xs">
-                  {n.author} · {n.date}
-                </p>
-              </li>
-            ))}
-          </ul>
-          {canAddNote && (
-            <Button variant="glass" size="sm" className="mt-4 w-full">
-              Add note
-            </Button>
-          )}
-        </GlassPanel>
+        <div className="space-y-4">
+          <GlassPanel className="p-5">
+            <SectionLabel>Attendance history</SectionLabel>
+            {student.attendanceRecords.length === 0 ? (
+              <p className="text-muted-foreground mt-3 text-sm">No attendance recorded yet.</p>
+            ) : (
+              <ul className="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1 text-sm">
+                {student.attendanceRecords.map((a) => (
+                  <li
+                    key={a.date}
+                    className="flex items-center justify-between gap-3 rounded-lg px-1 py-1"
+                  >
+                    <span className="text-muted-foreground">{a.date}</span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-2.5 py-0.5 text-[0.65rem] capitalize",
+                        a.status === "present" && "border-success/30 bg-success/12 text-success",
+                        a.status === "absent" && "border-risk/30 bg-risk/12 text-risk",
+                        a.status === "late" && "border-primary/30 bg-primary/12 text-primary",
+                      )}
+                    >
+                      {a.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassPanel>
+
+          <GlassPanel className="p-5">
+            <SectionLabel>Teacher notes</SectionLabel>
+            <ul className="mt-4 space-y-4">
+              {student.notes.map((n) => (
+                <li key={n.text} className="glass rounded-xl p-3">
+                  <p className="text-sm leading-snug">{n.text}</p>
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    {n.author} · {n.date}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {canAddNote && (
+              <Button variant="glass" size="sm" className="mt-4 w-full">
+                Add note
+              </Button>
+            )}
+          </GlassPanel>
+        </div>
       </div>
     </div>
   );

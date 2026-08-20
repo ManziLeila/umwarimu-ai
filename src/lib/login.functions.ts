@@ -12,12 +12,18 @@ export const loginStep1 = createServerFn({ method: "POST" })
   .validator((input: unknown) => LoginStep1Input.parse(input))
   .handler(async ({ data }) => {
     const { verifyPassword, generateOtpCode, signOtpToken } = await import("./auth.server");
-    const { findAccount, sendOtpEmail } = await import("./backend.server");
+    const { AppsScriptNetworkError, findAccount, sendOtpEmail } = await import("./backend.server");
 
     let account;
     try {
       account = await findAccount(data.username);
-    } catch {
+    } catch (err) {
+      if (err instanceof AppsScriptNetworkError) {
+        return {
+          ok: false as const,
+          error: "Couldn't reach the server right now. Please try again in a moment.",
+        };
+      }
       return { ok: false as const, error: "Invalid username or password." };
     }
 
@@ -43,6 +49,12 @@ export const loginStep1 = createServerFn({ method: "POST" })
     try {
       await sendOtpEmail(account.email, code);
     } catch (err) {
+      if (err instanceof AppsScriptNetworkError) {
+        return {
+          ok: false as const,
+          error: "Couldn't reach the server right now. Please try again in a moment.",
+        };
+      }
       return {
         ok: false as const,
         error:

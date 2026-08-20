@@ -24,11 +24,13 @@ import {
   summarizeStudent,
 } from "./dashboardData";
 import { submitAttendance, submitScores } from "./entry";
+import { listMessageThreads, listMessagesForStudent, sendMessage } from "./messages";
+import type { MessageRow } from "./messages";
 import { listSchoolsWithStats } from "./network";
 import { repairAllSchoolSheets } from "./repair";
 import { onboardSchool } from "./onboarding";
 import type { OnboardSchoolInput } from "./onboarding";
-import { findSchoolById, listSchools, setSchoolStatus } from "./registry";
+import { findSchoolById, listSchools, listStudentAccounts, setSchoolStatus } from "./registry";
 import {
   readActiveStudents,
   readAlertLog,
@@ -151,6 +153,9 @@ function route(req: ApiRequest): ApiResponse {
         return { ok: true, data: createNetworkAdminAccount(input) };
       }
 
+      case "listStudentAccounts":
+        return { ok: true, data: listStudentAccounts() };
+
       case "listSchoolsWithStats":
         return { ok: true, data: listSchoolsWithStats() };
 
@@ -166,6 +171,25 @@ function route(req: ApiRequest): ApiResponse {
 
       case "repairAllSchoolSheets":
         return { ok: true, data: repairAllSchoolSheets() };
+
+      case "sendMessage": {
+        const ss = openSchool(requireParam(req, "schoolId"));
+        const input = req.params as unknown as Omit<MessageRow, "id" | "createdAt">;
+        if (!input?.studentId || !input?.senderRole || !input?.text) {
+          throw new Error("params.studentId, senderRole and text are required.");
+        }
+        return { ok: true, data: sendMessage(ss, input) };
+      }
+
+      case "listMessagesForStudent": {
+        const ss = openSchool(requireParam(req, "schoolId"));
+        return { ok: true, data: listMessagesForStudent(ss, requireParam(req, "studentId")) };
+      }
+
+      case "listMessageThreads": {
+        const ss = openSchool(requireParam(req, "schoolId"));
+        return { ok: true, data: listMessageThreads(ss, classesParam(req)) };
+      }
 
       case "onboardSchool": {
         const input = req.params as unknown as OnboardSchoolInput;

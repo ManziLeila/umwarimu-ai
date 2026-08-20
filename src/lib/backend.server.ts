@@ -39,6 +39,7 @@ export interface StudentDetail extends StudentSummary {
   notes: Array<{ author: string; date: string; text: string }>;
   recommendations: string[];
   weakSubjects: string[];
+  attendanceRecords: Array<{ date: string; status: "present" | "absent" | "late" }>;
 }
 
 export interface TrendPoint {
@@ -87,6 +88,14 @@ interface AppsScriptResponse<T> {
   error?: string;
 }
 
+/** Thrown only for a genuine network-level failure (couldn't even reach
+ * script.google.com) — distinct from a normal `{ok:false}` application
+ * error (bad input, unknown account, etc.). Callers that show the user a
+ * message — like "invalid username or password" — should check for this
+ * and show something honest ("couldn't reach the server") instead, rather
+ * than quietly misreporting a network blip as a wrong password. */
+export class AppsScriptNetworkError extends Error {}
+
 const NETWORK_RETRY_ATTEMPTS = 3;
 const NETWORK_RETRY_DELAY_MS = 400;
 
@@ -118,7 +127,7 @@ async function callAppsScript<T>(action: string, params?: Record<string, unknown
         await sleep(NETWORK_RETRY_DELAY_MS * attempt);
         continue;
       }
-      throw new Error(
+      throw new AppsScriptNetworkError(
         `Couldn't reach the Apps Script backend after ${NETWORK_RETRY_ATTEMPTS} attempts: ${
           err instanceof Error ? err.message : String(err)
         }`,
@@ -126,7 +135,7 @@ async function callAppsScript<T>(action: string, params?: Record<string, unknown
     }
 
     if (!res.ok) {
-      throw new Error(`Apps Script backend returned HTTP ${res.status}.`);
+      throw new AppsScriptNetworkError(`Apps Script backend returned HTTP ${res.status}.`);
     }
 
     const body = (await res.json()) as AppsScriptResponse<T>;
@@ -139,7 +148,7 @@ async function callAppsScript<T>(action: string, params?: Record<string, unknown
   // Unreachable — the loop above always returns or throws — but keeps TS happy.
   throw lastNetworkError instanceof Error
     ? lastNetworkError
-    : new Error("Couldn't reach the Apps Script backend.");
+    : new AppsScriptNetworkError("Couldn't reach the Apps Script backend.");
 }
 
 function sleep(ms: number): Promise<void> {
@@ -249,6 +258,49 @@ export interface OnboardSchoolResult {
 
 export function onboardSchool(input: OnboardSchoolInput): Promise<OnboardSchoolResult> {
   return callAppsScript<OnboardSchoolResult>("onboardSchool", { ...input });
+}
+
+// --- Student <-> class-teacher messaging ---
+
+export interface MessageItem {
+  id: string;
+  studentId: string;
+  className: string;
+  senderRole: "student" | "teacher";
+  senderName: string;
+  senderUsername: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface MessageThread {
+  studentId: string;
+  studentName: string;
+  className: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  messages: MessageItem[];
+}
+
+export function sendMessage(
+  schoolId: string,
+  input: Omit<MessageItem, "id" | "createdAt">,
+): Promise<MessageItem> {
+  return callAppsScript<MessageItem>("sendMessage", { schoolId, ...input });
+}
+
+export function listMessagesForStudent(
+  schoolId: string,
+  studentId: string,
+): Promise<MessageItem[]> {
+  return callAppsScript<MessageItem[]>("listMessagesForStudent", { schoolId, studentId });
+}
+
+export function listMessageThreads(
+  schoolId: string,
+  classes: string[] = [],
+): Promise<MessageThread[]> {
+  return callAppsScript<MessageThread[]>("listMessageThreads", { schoolId, classes });
 }
 
 // --- Network-admin (platform-wide) oversight ---

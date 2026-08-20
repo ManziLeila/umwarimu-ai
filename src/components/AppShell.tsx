@@ -12,6 +12,7 @@ import {
   UserCog,
   GraduationCap,
   ClipboardList,
+  MessageCircle,
   X,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -43,6 +44,7 @@ const nav = [
   { to: "/analytics", key: "nav.analytics", icon: BarChart3 },
   { to: "/tutor", key: "nav.tutor", icon: Sparkles },
   { to: "/entry", key: "nav.entry", icon: ClipboardList },
+  { to: "/messages", key: "nav.messages", icon: MessageCircle },
   { to: "/notifications", key: "nav.notifications", icon: Bell },
   { to: "/settings", key: "nav.settings", icon: Settings },
 ] as const;

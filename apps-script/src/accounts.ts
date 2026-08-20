@@ -191,7 +191,7 @@ export function findAccountByUsername(username: string): AccountCredentials | un
   const sheet = ss.getSheetByName("Students");
   const student = sheet
     ? readRowsAsObjects<Student>(sheet).find(
-        (s) => String(s.studentId) === studentIndex.studentId,
+        (s) => String(s.studentId) === String(studentIndex.studentId),
       )
     : undefined;
   if (!student?.username || !student.passwordHash || !student.passwordSalt) return undefined;
@@ -208,7 +208,9 @@ export function findAccountByUsername(username: string): AccountCredentials | un
     schoolName: school.name,
     role: "student",
     classes: [student.className],
-    studentId: student.studentId,
+    // Same numeric-cell coercion as everywhere else — this is the one place
+    // a student's ID enters the session, so it's the last line of defense.
+    studentId: String(student.studentId),
   };
 }
 

@@ -121,7 +121,12 @@ export function updateStaffCredentials(
 export function listStudentAccounts(): StudentAccountIndexRow[] {
   const sheet = openMasterRegistry().getSheetByName(STUDENT_ACCOUNTS_SHEET);
   if (!sheet) return [];
-  return readRowsAsObjects<StudentAccountIndexRow>(sheet);
+  // A purely-numeric studentId (e.g. "26260") reads back from Sheets as a
+  // JS number, not a string — every consumer expects a string.
+  return readRowsAsObjects<StudentAccountIndexRow>(sheet).map((r) => ({
+    ...r,
+    studentId: String(r.studentId),
+  }));
 }
 
 export function findStudentAccountByUsername(username: string): StudentAccountIndexRow | undefined {
