@@ -146,6 +146,19 @@ export function linkFormResponses(
   sheet ??= spreadsheet.getSheetByName(desiredSheetName) ?? undefined;
   if (!sheet) return undefined;
 
+  // A spreadsheet created via Drive's makeCopy() (e.g. onboarding a new
+  // school from the template) can already have a sheet under this exact
+  // name, tied to a *different* form (the template's own). That's a ghost
+  // as far as the sheet we just linked is concerned — clear it out of the
+  // way (unlinking its form first, since Apps Script won't delete a
+  // form-linked sheet) so the rename below doesn't collide.
+  const clashing = spreadsheet.getSheetByName(desiredSheetName);
+  if (clashing && clashing.getSheetId() !== sheet.getSheetId()) {
+    const clashingFormUrl = clashing.getFormUrl();
+    if (clashingFormUrl) FormApp.openByUrl(clashingFormUrl).removeDestination();
+    spreadsheet.deleteSheet(clashing);
+  }
+
   sheet.setName(desiredSheetName);
   sheet.setFrozenRows(1);
   ensureStatusColumns(sheet);
