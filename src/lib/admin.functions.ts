@@ -142,6 +142,97 @@ export const createStudent = createServerFn({ method: "POST" })
     }
   });
 
+const ResetStaffPasswordInput = z.object({ username: z.string().min(1) });
+
+/** Generates a brand-new temp password for a staff account that's lost
+ * access to its old one — e.g. it was never actually delivered (see
+ * bulkCreateStudents' history: a failed send used to just discard the
+ * password). Reuses the same backend write as a self-service password
+ * change; the difference is only that this doesn't require knowing the
+ * current password first. Always returns the new password — unlike
+ * account creation, resetting never emails it, so the admin has to relay
+ * it to the staff member directly.
+ *
+ * Looks the username up in the caller's own school before writing anything
+ * — `updatePassword` itself resolves usernames globally with no school
+ * filter, so skipping this check would let any admin reset any account
+ * platform-wide, not just their own school's staff. */
+export const resetStaffPassword = createServerFn({ method: "POST" })
+  .validator((input: unknown) => ResetStaffPasswordInput.parse(input))
+  .handler(async ({ data }) => {
+    const session = await requireAdminSession();
+    const { hashPassword, generateTempPassword } = await import("./auth.server");
+    const { updatePassword, listStaffForSchool } = await import("./backend.server");
+
+    const staff = await listStaffForSchool(session.schoolId);
+    const target = staff.find(
+      (s) => s.username.trim().toLowerCase() === data.username.trim().toLowerCase(),
+    );
+    if (!target) {
+      return {
+        ok: false as const,
+        error: "No staff account found with that username at your school.",
+      };
+    }
+
+    const tempPassword = generateTempPassword();
+    const { hash, salt } = hashPassword(tempPassword);
+
+    try {
+      await updatePassword("staff", target.username, hash, salt, true);
+      return { ok: true as const, tempPassword };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Couldn't reset that password.",
+      };
+    }
+  });
+
+const ResetStudentPasswordInput = z.object({ username: z.string().min(1) });
+
+/** Same recovery path as resetStaffPassword, for a student account — see
+ * that function's doc comment and its note on school-scoping. The
+ * teacher class-scoping check uses the student's *actual* className from
+ * the school roster, not a client-submitted one — trusting a client value
+ * here would let a teacher pair a class they do have access to with a
+ * username from a class (or school) they don't. */
+export const resetStudentPassword = createServerFn({ method: "POST" })
+  .validator((input: unknown) => ResetStudentPasswordInput.parse(input))
+  .handler(async ({ data }) => {
+    const session = await requireStudentManagerSession();
+    const { hashPassword, generateTempPassword } = await import("./auth.server");
+    const { updatePassword, listStudentsForSchool } = await import("./backend.server");
+
+    const students = await listStudentsForSchool(session.schoolId);
+    const target = students.find(
+      (s) =>
+        s.hasAccount &&
+        s.username &&
+        s.username.trim().toLowerCase() === data.username.trim().toLowerCase(),
+    );
+    if (!target?.username) {
+      return {
+        ok: false as const,
+        error: "No student account found with that username at your school.",
+      };
+    }
+    assertClassAllowed(session, target.className);
+
+    const tempPassword = generateTempPassword();
+    const { hash, salt } = hashPassword(tempPassword);
+
+    try {
+      await updatePassword("student", target.username, hash, salt, true);
+      return { ok: true as const, tempPassword };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Couldn't reset that password.",
+      };
+    }
+  });
+
 const BulkCreateStudentsInput = z.object({ students: z.array(CreateStudentInput).min(1).max(200) });
 
 export const bulkCreateStudents = createServerFn({ method: "POST" })
@@ -151,7 +242,12 @@ export const bulkCreateStudents = createServerFn({ method: "POST" })
     const { hashPassword, generateTempPassword } = await import("./auth.server");
     const { createStudentAccount } = await import("./backend.server");
 
-    const created: Array<{ studentId: string; username: string; emailSent: boolean }> = [];
+    const created: Array<{
+      studentId: string;
+      username: string;
+      emailSent: boolean;
+      tempPassword?: string;
+    }> = [];
     const failed: Array<{ studentId: string; reason: string }> = [];
 
     for (const row of data.students) {
@@ -176,6 +272,10 @@ export const bulkCreateStudents = createServerFn({ method: "POST" })
           studentId: row.studentId,
           username: row.username,
           emailSent: result.emailSent,
+          // Same fallback rule as the single-create path below: this is the
+          // only copy of the plain temp password anywhere, so a failed send
+          // must not silently drop it — nobody could ever sign in otherwise.
+          ...(result.emailSent ? {} : { tempPassword }),
         });
       } catch (err) {
         failed.push({

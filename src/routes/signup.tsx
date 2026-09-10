@@ -66,8 +66,7 @@ function SignUp() {
           {result.emailSent ? (
             <p className="text-muted-foreground mt-3 text-sm">
               We emailed <span className="text-foreground">{adminEmail}</span> your username and a
-              temporary password. Use them to sign in — you'll be asked to choose your own password
-              first.
+              temporary password. Use them to sign in.
             </p>
           ) : (
             <div className="mt-3 space-y-2 text-left">

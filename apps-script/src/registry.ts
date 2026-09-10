@@ -1,5 +1,11 @@
 import { getMasterRegistrySpreadsheetId } from "./config";
-import { appendObjectRow, getHeaders, readRowsAsObjects, updateMatchingRow } from "./sheetAccess";
+import {
+  appendObjectRow,
+  deleteMatchingRows,
+  getHeaders,
+  readRowsAsObjects,
+  updateMatchingRow,
+} from "./sheetAccess";
 import type { SchoolRow, StaffUser } from "./types";
 
 export const SCHOOLS_SHEET = "Schools";
@@ -76,6 +82,29 @@ export function setSchoolStatus(schoolId: string, status: "active" | "suspended"
   if (!updated) throw new Error(`Unknown school "${schoolId}".`);
 }
 
+/** Returns whether a matching school row was found and removed. Doesn't
+ * touch Staff/StudentAccounts rows or any Drive files — see deleteSchool in
+ * network.ts, which is the actual entry point and handles all of that. */
+export function deleteSchoolRow(schoolId: string): boolean {
+  const sheet = openMasterRegistry().getSheetByName(SCHOOLS_SHEET);
+  if (!sheet) return false;
+  return deleteMatchingRows(sheet, "schoolId", schoolId) > 0;
+}
+
+/** Returns how many staff rows were removed. */
+export function deleteStaffRowsForSchool(schoolId: string): number {
+  const sheet = openMasterRegistry().getSheetByName(STAFF_SHEET);
+  if (!sheet) return 0;
+  return deleteMatchingRows(sheet, "schoolId", schoolId);
+}
+
+/** Returns how many StudentAccounts index rows were removed. */
+export function deleteStudentAccountRowsForSchool(schoolId: string): number {
+  const sheet = openMasterRegistry().getSheetByName(STUDENT_ACCOUNTS_SHEET);
+  if (!sheet) return 0;
+  return deleteMatchingRows(sheet, "schoolId", schoolId);
+}
+
 export function listStaff(): StaffUser[] {
   const sheet = openMasterRegistry().getSheetByName(STAFF_SHEET);
   if (!sheet) return [];
@@ -108,14 +137,24 @@ export function updateStaffCredentials(
   username: string,
   passwordHash: string,
   passwordSalt: string,
+  mustChangePassword: boolean,
 ): boolean {
   const sheet = openMasterRegistry().getSheetByName(STAFF_SHEET);
   if (!sheet) return false;
   return updateMatchingRow(sheet, "username", username, {
     passwordHash,
     passwordSalt,
-    mustChangePassword: false,
+    mustChangePassword,
   });
+}
+
+/** Returns whether a matching staff row was found and updated. Callers must
+ * check the new username isn't already taken themselves (see
+ * findStaffByUsername) — this only writes the row. */
+export function writeStaffUsername(username: string, newUsername: string): boolean {
+  const sheet = openMasterRegistry().getSheetByName(STAFF_SHEET);
+  if (!sheet) return false;
+  return updateMatchingRow(sheet, "username", username, { username: newUsername });
 }
 
 export function listStudentAccounts(): StudentAccountIndexRow[] {

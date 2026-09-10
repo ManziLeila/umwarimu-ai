@@ -36,6 +36,9 @@ export function AddStudentsPanel({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noEmailCredentials, setNoEmailCredentials] = useState<
+    Array<{ username: string; tempPassword: string }>
+  >([]);
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -64,6 +67,7 @@ export function AddStudentsPanel({
   const handleUpload = async (file: File) => {
     setError(null);
     setNotice(null);
+    setNoEmailCredentials([]);
     setUploading(true);
     try {
       const rows = parseCsv(await file.text()).map((r) => ({
@@ -80,10 +84,15 @@ export function AddStudentsPanel({
         return;
       }
       const result = await bulkCreateStudents({ data: { students: rows } });
+      const noEmail = result.created.filter((c) => !c.emailSent);
       setNotice(
         `Created ${result.created.length} of ${rows.length} student${rows.length === 1 ? "" : "s"}.` +
-          (result.failed.length > 0 ? ` ${result.failed.length} failed — see below.` : ""),
+          (result.failed.length > 0 ? ` ${result.failed.length} failed — see below.` : "") +
+          (noEmail.length > 0
+            ? ` ${noEmail.length} email${noEmail.length === 1 ? "" : "s"} didn't send — temp passwords below.`
+            : ""),
       );
+      setNoEmailCredentials(noEmail.map((c) => ({ username: c.username, tempPassword: c.tempPassword ?? "" })));
       if (result.failed.length > 0) {
         setError(result.failed.map((f) => `${f.studentId}: ${f.reason}`).join("\n"));
       }
@@ -100,6 +109,7 @@ export function AddStudentsPanel({
     e.preventDefault();
     setError(null);
     setNotice(null);
+    setNoEmailCredentials([]);
     setSubmitting(true);
     try {
       const result = await createStudent({
@@ -161,6 +171,21 @@ export function AddStudentsPanel({
 
       {error && <p className="text-risk whitespace-pre-line text-xs">{error}</p>}
       {notice && <p className="text-success text-xs">{notice}</p>}
+      {noEmailCredentials.length > 0 && (
+        <div className="border-warning/40 bg-warning/[0.07] space-y-1 rounded-lg border p-3 text-xs">
+          <p className="text-warning font-medium">
+            These accounts were created but the email didn't send — share these temp passwords
+            with the student directly, since this is the only place they're shown:
+          </p>
+          <ul className="text-muted-foreground space-y-0.5">
+            {noEmailCredentials.map((c) => (
+              <li key={c.username}>
+                <span className="text-foreground font-mono">{c.username}</span> — {c.tempPassword}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
         <div className="space-y-2">

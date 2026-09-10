@@ -109,7 +109,7 @@ export const changePassword = createServerFn({ method: "POST" })
     }
 
     const { hash, salt } = hashPassword(data.newPassword);
-    await updatePassword(account.kind, account.username, hash, salt);
+    await updatePassword(account.kind, account.username, hash, salt, false);
 
     return { ok: true as const };
   });

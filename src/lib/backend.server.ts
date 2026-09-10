@@ -229,6 +229,8 @@ export interface StudentListItem {
   guardianEmail: string;
   status: "active" | "inactive";
   hasAccount: boolean;
+  /** Only present when hasAccount is true. */
+  username?: string;
 }
 
 export function listStudentsForSchool(schoolId: string): Promise<StudentListItem[]> {
@@ -327,13 +329,35 @@ export function setSchoolStatus(schoolId: string, status: "active" | "suspended"
   return callAppsScript<void>("setSchoolStatus", { schoolId, status });
 }
 
+export interface DeleteSchoolResult {
+  schoolId: string;
+  staffRemoved: number;
+  studentAccountsRemoved: number;
+  trashedFiles: string[];
+  trashErrors: string[];
+}
+
+/** Removes a school from the registry entirely (its Staff/StudentAccounts
+ * rows and the Schools row itself) and moves its spreadsheet + both Forms
+ * to Drive trash — recoverable there, not permanently destroyed outright. */
+export function deleteSchool(schoolId: string): Promise<DeleteSchoolResult> {
+  return callAppsScript<DeleteSchoolResult>("deleteSchool", { schoolId });
+}
+
 export function updatePassword(
   kind: "staff" | "student",
   username: string,
   passwordHash: string,
   passwordSalt: string,
+  mustChangePassword: boolean,
 ): Promise<void> {
-  return callAppsScript<void>("updatePassword", { kind, username, passwordHash, passwordSalt });
+  return callAppsScript<void>("updatePassword", {
+    kind,
+    username,
+    passwordHash,
+    passwordSalt,
+    mustChangePassword,
+  });
 }
 
 // --- Dashboard / students / analytics reads ---

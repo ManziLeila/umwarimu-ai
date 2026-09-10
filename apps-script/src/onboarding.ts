@@ -4,7 +4,7 @@ import {
   getTemplateScoresFormId,
   getTemplateSpreadsheetId,
 } from "./config";
-import { addSchoolRow, addStaffRow, findSchoolById } from "./registry";
+import { addSchoolRow, addStaffRow, findSchoolById, findStaffByUsername } from "./registry";
 import { linkFormResponses } from "./sheetAccess";
 import type { SchoolRow } from "./types";
 
@@ -42,6 +42,14 @@ export interface OnboardSchoolResult {
 export function onboardSchool(input: OnboardSchoolInput): OnboardSchoolResult {
   if (findSchoolById(input.schoolId)) {
     throw new Error(`School ID "${input.schoolId}" is already registered.`);
+  }
+  // Staff usernames are looked up globally at login (one shared registry
+  // across every school), so this has to be a global uniqueness check too —
+  // createTeacherAccount already does this; this was the one account-creation
+  // path that didn't, letting two different schools' admins collide on the
+  // same username and making the second one permanently unreachable at login.
+  if (findStaffByUsername(input.adminUsername)) {
+    throw new Error(`Username "${input.adminUsername}" is already taken.`);
   }
 
   const spreadsheetCopy = DriveApp.getFileById(getTemplateSpreadsheetId()).makeCopy(

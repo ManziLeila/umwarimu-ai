@@ -3,7 +3,14 @@
 // (see src/lib/network.functions.ts); this module just reads/writes across
 // every school in the Master Registry.
 
-import { listSchools, listStaff } from "./registry";
+import {
+  deleteSchoolRow,
+  deleteStaffRowsForSchool,
+  deleteStudentAccountRowsForSchool,
+  findSchoolById,
+  listSchools,
+  listStaff,
+} from "./registry";
 import { readActiveStudents } from "./schoolData";
 import type { SchoolRow } from "./types";
 
@@ -29,4 +36,41 @@ export function listSchoolsWithStats(): SchoolWithStats[] {
       staffCount: staff.filter((s) => s.schoolId === school.schoolId).length,
     };
   });
+}
+
+export interface DeleteSchoolResult {
+  schoolId: string;
+  staffRemoved: number;
+  studentAccountsRemoved: number;
+  trashedFiles: string[];
+  trashErrors: string[];
+}
+
+/** Network-admin only (see requireNetworkAdminSession in the Node caller):
+ * removes a school from the registry entirely — its Staff/StudentAccounts
+ * rows, and the Schools row itself. The school's own spreadsheet (with all
+ * its Students/Scores/Attendance data) and both Forms are moved to Drive
+ * trash rather than permanently deleted — recoverable for Drive's normal
+ * retention window if this was run by mistake, rather than gone outright. */
+export function deleteSchool(schoolId: string): DeleteSchoolResult {
+  const school = findSchoolById(schoolId);
+  if (!school) throw new Error(`Unknown school "${schoolId}".`);
+
+  const trashedFiles: string[] = [];
+  const trashErrors: string[] = [];
+  for (const fileId of [school.spreadsheetId, school.scoresFormId, school.attendanceFormId]) {
+    if (!fileId) continue;
+    try {
+      DriveApp.getFileById(fileId).setTrashed(true);
+      trashedFiles.push(fileId);
+    } catch (err) {
+      trashErrors.push(`${fileId}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  const staffRemoved = deleteStaffRowsForSchool(schoolId);
+  const studentAccountsRemoved = deleteStudentAccountRowsForSchool(schoolId);
+  deleteSchoolRow(schoolId);
+
+  return { schoolId, staffRemoved, studentAccountsRemoved, trashedFiles, trashErrors };
 }

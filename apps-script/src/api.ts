@@ -5,6 +5,7 @@ import {
   findAccountByUsername,
   listStaffForSchool,
   listStudentsForSchool,
+  renameStaffUsername,
   sendOtpEmail,
   updateAccountPassword,
 } from "./accounts";
@@ -26,7 +27,7 @@ import {
 import { submitAttendance, submitScores } from "./entry";
 import { listMessageThreads, listMessagesForStudent, sendMessage } from "./messages";
 import type { MessageRow } from "./messages";
-import { listSchoolsWithStats } from "./network";
+import { deleteSchool, listSchoolsWithStats } from "./network";
 import { repairAllSchoolSheets } from "./repair";
 import { onboardSchool } from "./onboarding";
 import type { OnboardSchoolInput } from "./onboarding";
@@ -132,6 +133,13 @@ function route(req: ApiRequest): ApiResponse {
         return { ok: true, data: "updated" };
       }
 
+      case "renameStaffUsername": {
+        const username = requireParam(req, "username");
+        const newUsername = requireParam(req, "newUsername");
+        renameStaffUsername(username, newUsername);
+        return { ok: true, data: "renamed" };
+      }
+
       case "listStaffForSchool":
         return { ok: true, data: listStaffForSchool(requireParam(req, "schoolId")) };
 
@@ -168,6 +176,9 @@ function route(req: ApiRequest): ApiResponse {
         setSchoolStatus(schoolId, status);
         return { ok: true, data: "updated" };
       }
+
+      case "deleteSchool":
+        return { ok: true, data: deleteSchool(requireParam(req, "schoolId")) };
 
       case "repairAllSchoolSheets":
         return { ok: true, data: repairAllSchoolSheets() };

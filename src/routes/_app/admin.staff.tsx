@@ -5,7 +5,7 @@ import { GlassPanel, SectionLabel, EmptyState } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createTeacher, getStaffList } from "@/lib/admin.functions";
+import { createTeacher, getStaffList, resetStaffPassword } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_app/admin/staff")({
   beforeLoad: ({ context }) => {
@@ -30,6 +30,25 @@ function AdminStaffPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [resettingUsername, setResettingUsername] = useState<string | null>(null);
+
+  const handleReset = async (username: string) => {
+    setError(null);
+    setNotice(null);
+    setResettingUsername(username);
+    try {
+      const result = await resetStaffPassword({ data: { username } });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setNotice(`New temp password for @${username}: ${result.tempPassword}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't reset that password.");
+    } finally {
+      setResettingUsername(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +194,7 @@ function AdminStaffPage() {
             {staff.map((s) => (
               <li
                 key={s.username}
-                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3"
+                className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 py-3"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{s.name}</p>
@@ -187,6 +206,14 @@ function AdminStaffPage() {
                 <span className="text-muted-foreground shrink-0 rounded-full border border-border px-2.5 py-1 text-[0.65rem] capitalize">
                   {s.role.replace("-", " ")}
                 </span>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  disabled={resettingUsername === s.username}
+                  onClick={() => handleReset(s.username)}
+                >
+                  {resettingUsername === s.username ? "Resetting…" : "Reset password"}
+                </Button>
               </li>
             ))}
           </ul>

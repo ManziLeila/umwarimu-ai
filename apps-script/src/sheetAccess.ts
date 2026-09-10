@@ -96,6 +96,29 @@ export function updateMatchingRow(
   return false;
 }
 
+/** Deletes every row where `matchColumn` equals `matchValue`. Returns how
+ * many rows were removed. Walks bottom-to-top so each deletion's row-index
+ * shift can't skip over — or misalign — a still-pending match above it. */
+export function deleteMatchingRows(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  matchColumn: string,
+  matchValue: string,
+): number {
+  const headers = getHeaders(sheet);
+  const matchCol = headers.indexOf(matchColumn);
+  if (matchCol === -1) return 0;
+
+  const values = sheet.getDataRange().getValues();
+  let deleted = 0;
+  for (let r = values.length - 1; r >= 1; r--) {
+    if (String(values[r][matchCol]) === matchValue) {
+      sheet.deleteRow(r + 1);
+      deleted++;
+    }
+  }
+  return deleted;
+}
+
 export function applyListValidation(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   headerName: string,

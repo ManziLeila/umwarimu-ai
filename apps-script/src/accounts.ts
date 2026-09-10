@@ -7,6 +7,7 @@ import {
   findStudentAccountByUsername,
   listStaff,
   updateStaffCredentials,
+  writeStaffUsername,
 } from "./registry";
 import { readActiveStudents } from "./schoolData";
 import { appendObjectRow, getHeaders, readRowsAsObjects, updateMatchingRow } from "./sheetAccess";
@@ -219,13 +220,21 @@ export interface UpdatePasswordInput {
   username: string;
   passwordHash: string;
   passwordSalt: string;
+  /** false for a self-service change (the user picked this password
+   * themselves — nothing more to force); true for an admin-issued reset
+   * (this is a fresh temp password, same as at account creation, so the
+   * recipient still needs to be forced onto one of their own choosing). */
+  mustChangePassword: boolean;
 }
 
-/** Used both for the forced first-login password change and any later
- * voluntary change — clears mustChangePassword in the same write. */
 export function updateAccountPassword(input: UpdatePasswordInput): void {
   if (input.kind === "staff") {
-    const updated = updateStaffCredentials(input.username, input.passwordHash, input.passwordSalt);
+    const updated = updateStaffCredentials(
+      input.username,
+      input.passwordHash,
+      input.passwordSalt,
+      input.mustChangePassword,
+    );
     if (!updated) throw new Error(`No staff account found for username "${input.username}".`);
     return;
   }
@@ -241,9 +250,23 @@ export function updateAccountPassword(input: UpdatePasswordInput): void {
   const updated = updateMatchingRow(sheet, "username", input.username, {
     passwordHash: input.passwordHash,
     passwordSalt: input.passwordSalt,
-    mustChangePassword: false,
+    mustChangePassword: input.mustChangePassword,
   });
   if (!updated) throw new Error(`No student row found for username "${input.username}".`);
+}
+
+/** Network-admin recovery tool: onboardSchool used to skip the username
+ * uniqueness check every other create-account path enforces, so two
+ * schools could end up with the same admin username — the second one then
+ * permanently unreachable at login, since findStaffByUsername resolves the
+ * first match. This renames the row directly rather than requiring the
+ * shadowed account holder to somehow log in and fix it themselves. */
+export function renameStaffUsername(username: string, newUsername: string): void {
+  if (findStaffByUsername(newUsername)) {
+    throw new Error(`Username "${newUsername}" is already taken.`);
+  }
+  const updated = writeStaffUsername(username, newUsername);
+  if (!updated) throw new Error(`No staff account found for username "${username}".`);
 }
 
 export interface StaffListItem {
@@ -278,6 +301,9 @@ export interface StudentListItem {
   guardianEmail: string;
   status: "active" | "inactive";
   hasAccount: boolean;
+  /** Only present when hasAccount is true — lets an admin reset this
+   * student's password without needing to store/expose the hash itself. */
+  username?: string;
 }
 
 /** Admin-facing roster of their own school's students — never includes
@@ -295,6 +321,7 @@ export function listStudentsForSchool(schoolId: string): StudentListItem[] {
     guardianEmail: s.guardianEmail,
     status: s.status,
     hasAccount: Boolean(s.username),
+    username: s.username,
   }));
 }
 
@@ -325,8 +352,6 @@ export function trySendNewAccountEmail(
         "An account has been created for you on Umwarimu AI.",
         `Username: ${username}`,
         `Temporary password: ${tempPassword}`,
-        "",
-        "You'll be asked to choose a new password the first time you sign in.",
       ].join("\n"),
     });
     return { emailSent: true };

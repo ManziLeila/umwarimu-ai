@@ -65,7 +65,7 @@ function ChangePasswordPage() {
           Choose a new password
         </h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          You're signing in with a temporary password — set your own before continuing.
+          Enter your current password and pick a new one.
         </p>
 
         <form className="mt-7 space-y-4 text-left" onSubmit={handleSubmit}>

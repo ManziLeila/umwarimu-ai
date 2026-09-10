@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Users, Gauge, CalendarCheck, LifeBuoy } from "lucide-react";
 import { useState } from "react";
 
 import { GlassPanel, MetricCard, SectionLabel, EmptyState } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { statusStyles } from "@/lib/mock-data";
-import { getSchoolDetail, setSchoolStatusAction } from "@/lib/network.functions";
+import { deleteSchoolAction, getSchoolDetail, setSchoolStatusAction } from "@/lib/network.functions";
 
 export const Route = createFileRoute("/network/schools/$schoolId")({
   loader: ({ params }) => getSchoolDetail({ data: { schoolId: params.schoolId } }),
@@ -19,6 +19,8 @@ function NetworkSchoolDetail() {
   const { dashboard, students, staff } = initial;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const toggleStatus = async () => {
     const next = school.status === "active" ? "suspended" : "active";
@@ -37,6 +39,30 @@ function NetworkSchoolDetail() {
       setError(err instanceof Error ? err.message : "Couldn't update that school.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        `Permanently remove "${school.name}"? This deletes its staff and student accounts from the registry and moves its spreadsheet/forms to Drive trash. This cannot be undone from here.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setDeleting(true);
+    try {
+      const result = await deleteSchoolAction({ data: { schoolId: school.schoolId } });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      navigate({ to: "/network" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete that school.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -74,6 +100,9 @@ function NetworkSchoolDetail() {
               onClick={toggleStatus}
             >
               {busy ? "…" : school.status === "active" ? "Suspend school" : "Reactivate school"}
+            </Button>
+            <Button variant="outline" size="sm" disabled={deleting} onClick={handleDelete}>
+              {deleting ? "Deleting…" : "Delete school"}
             </Button>
           </div>
         </div>

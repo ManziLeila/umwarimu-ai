@@ -37,6 +37,26 @@ export const setSchoolStatusAction = createServerFn({ method: "POST" })
     }
   });
 
+/** Permanent (well — Drive-trash-recoverable) removal of a school and its
+ * staff/student accounts. Deliberately separate from setSchoolStatusAction
+ * (suspend/reactivate is reversible in-place; this is not meant for routine
+ * use — it exists for cleaning up test/duplicate schools). */
+export const deleteSchoolAction = createServerFn({ method: "POST" })
+  .validator((input: unknown) => z.object({ schoolId: z.string().min(1) }).parse(input))
+  .handler(async ({ data }) => {
+    await requireNetworkAdminSession();
+    const { deleteSchool } = await import("./backend.server");
+    try {
+      const result = await deleteSchool(data.schoolId);
+      return { ok: true as const, result };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Couldn't delete that school.",
+      };
+    }
+  });
+
 const SchoolIdInput = z.object({ schoolId: z.string().min(1) });
 
 /** A network admin drilling into one school's own dashboard/roster/staff —
